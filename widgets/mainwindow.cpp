@@ -2698,6 +2698,7 @@ void MainWindow::statusChanged()
     m_wideGraph->setSuperFox(false);
     m_wideGraph->setSuperHound(false);
   }
+  if (ui->tx1->text()=="" && m_mode!="FT8") ui->txb6->click();
 }
 
 bool MainWindow::eventFilter (QObject * object, QEvent * event)

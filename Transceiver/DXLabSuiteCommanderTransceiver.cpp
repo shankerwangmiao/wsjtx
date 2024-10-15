@@ -191,7 +191,7 @@ void DXLabSuiteCommanderTransceiver::do_ptt (bool on)
           CAT_ERROR ("rig failed to respond to PTT: " << on);
           throw error {tr ("Transceiver did not respond to PTT On/Off quickly enough; \n"
                            "reduce DX Lab Suite Commander's 'Command Interval' setting \n"
-                           "or contact DXLab support.")};
+                           "or contact DXLab support at DXLab@groups.io.")};
       }
     }
   else

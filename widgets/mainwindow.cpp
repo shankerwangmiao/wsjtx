@@ -93,6 +93,8 @@
 #include "ui_mainwindow.h"
 #include "moc_mainwindow.cpp"
 #include "Logger.hpp"
+#include "widgets/QSYMessage.h" //w3sz
+#include "widgets/QSYMessageCreator.h" //w3sz
 
 #define FCL fortran_charlen_t
 
@@ -1187,6 +1189,8 @@ void MainWindow::on_the_minute ()
 MainWindow::~MainWindow()
 {
   if(m_astroWidget) m_astroWidget.reset ();
+  if(m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset (); //w3sz
+  if(m_QSYMessageWidget) m_QSYMessageWidget.reset (); //w3sz
   auto fname {QDir::toNativeSeparators(m_config.writeable_data_dir ().absoluteFilePath ("wsjtx_wisdom.dat"))};
   fftwf_export_wisdom_to_filename (fname.toLocal8Bit ());
   m_audioThread.quit ();
@@ -1320,6 +1324,36 @@ void MainWindow::writeSettings()
   m_settings->setValue ("disableWritingOfAllTxt", ui->actionDisable_writing_of_ALL_TXT->isChecked() );
   m_settings->endGroup();
 }
+
+//start w3sz
+void MainWindow::update_tx5(const QString &qsy_text)
+{
+	if((ui->tx5->findText(qsy_text)) == -1)
+	{	
+		ui->tx5->addItem(qsy_text);
+		ui->tx5->setCurrentIndex(ui->tx5->count() - 1);
+	}
+	else
+	{
+		ui->tx5->setCurrentIndex(ui->tx5->findText(qsy_text));
+	}	
+	ui->txb5->click();
+}
+
+void MainWindow::reply_tx5(const QString &qsy_reply)
+{
+	if((ui->tx5->findText(qsy_reply)) == -1)
+	{	
+		ui->tx5->addItem(qsy_reply);
+		ui->tx5->setCurrentIndex(ui->tx5->count() - 1);
+	}
+	else
+	{
+		ui->tx5->setCurrentIndex(ui->tx5->findText(qsy_reply));
+	}	
+	ui->txb5->click();
+}
+//end w3sz
 
 //---------------------------------------------------------- readSettings()
 void MainWindow::readSettings()
@@ -2012,6 +2046,11 @@ void MainWindow::fastSink(qint64 frames)
     bool stdMsg = decodedtext.report(m_baseCall,
                   Radio::base_callsign(ui->dxCallEntry->text()),m_rptRcvd);
     if (stdMsg) pskPost (decodedtext);
+	
+  //start w3sz
+   if(m_QSYMessageCreatorWidget) showQSYMessage(message);
+  //end w3sz 
+	
   }
 
   float fracTR=float(k)/(12000.0*m_TRperiod);
@@ -2080,6 +2119,102 @@ void MainWindow::showStatusMessage(const QString& statusMsg)
 {
   statusBar()->showMessage(statusMsg, 5000);
 }
+
+//start w3sz
+void MainWindow::showQSYMessage(QString message)
+{
+  QString the_line = message;  
+  QString qCall = QString(m_config.my_callsign ()); 
+  QString qDXCall = ui->dxCallEntry->text();
+  if(the_line.contains(qCall + QString(" ")))
+  {	  
+	  QStringList bhList = the_line.split(" ",Qt::SkipEmptyParts);
+	  qsizetype index = (bhList.indexOf(qCall)); 
+	  if(index != (-1))
+	  {
+		  QString finalMatch = "";
+		  QRegularExpression re1("[A-J][V48MW][0-9]{3}");
+		  QRegularExpression re2("(92)[V48MW][0-9]{3}");
+		  QRegularExpression re3("(93)[V48MW][0-9]{3}");
+		  
+		  QRegularExpressionMatch match = re1.match(the_line,QRegularExpression::NormalMatch);
+		  if(match.hasMatch())
+		  {
+		       int startOffset = match.capturedStart(); 
+		       int endOffset = match.capturedEnd();
+		       finalMatch = the_line.mid(startOffset,(1+endOffset-startOffset));
+		  }
+		  else
+		  {
+		  	match = re2.match(the_line,QRegularExpression::NormalMatch);
+		  	if(match.hasMatch())
+		  	{
+			    int startOffset = match.capturedStart(); 
+			    int endOffset = match.capturedEnd();
+			    finalMatch = the_line.mid(startOffset,(1+endOffset-startOffset));
+		  	}
+		  	else
+		  	{
+		  		match = re3.match(the_line,QRegularExpression::NormalMatch);
+			  	if(match.hasMatch())
+			  	{
+				    int startOffset = match.capturedStart(); 
+				    int endOffset = match.capturedEnd();
+				    finalMatch = the_line.mid(startOffset,(1+endOffset-startOffset));
+			  	}
+		  	}
+		  	
+		  }	
+		  if(finalMatch.size()>=5)
+		  {
+			  m_QSYMessageWidget.reset (new QSYMessage(finalMatch, qCall)); 
+			  
+			  //connect to signal finish
+			  connect (this, &MainWindow::finished, &QSYMessage::close);
+			  
+			  //connect to signal from QSYMessage
+			  connect (m_QSYMessageWidget.data (), &QSYMessage::sendReply, this, &MainWindow::reply_tx5); 			  
+			  QPoint mainPos = this->mapToGlobal(QPoint(0,0));
+			  m_QSYMessageWidget->show();
+			  m_QSYMessageWidget->move(mainPos.x() + this->width()/2 - (m_QSYMessageWidget->width())/2, mainPos.y() + this->height()/2 - (m_QSYMessageWidget->height())/2);
+			  m_QSYMessageWidget->raise();
+			  m_QSYMessageWidget->activateWindow();	
+		  }
+	  }
+  }
+  else if(the_line.contains(qDXCall + QString(" ")))
+  {  
+	  if ((the_line.contains("OKQSY") || the_line.contains("NOQSY")) )
+	  { 	  
+		  QStringList bhList = the_line.split(" ",Qt::SkipEmptyParts);
+		  qsizetype index = (bhList.indexOf(qDXCall)); 
+		  if(index != (-1))
+		  {	
+		  	  QString yesOrNo = " ";
+			  if (the_line.contains("OKQSY"))
+			  {
+				yesOrNo = QString(" OKQSY");
+			  }
+			  else
+			  {
+				yesOrNo = QString(" NOQSY");
+			  }
+				  
+			  QString qNewMessage = QString("$ ") + qDXCall + yesOrNo;
+			  m_QSYMessageWidget.reset (new QSYMessage(qNewMessage, qDXCall));
+			  
+			  //connect to signal finish
+			  connect (this, &MainWindow::finished, &QSYMessage::close);	
+			  QPoint mainPos = this->mapToGlobal(QPoint(0,0));
+			  m_QSYMessageWidget->show();
+			  m_QSYMessageWidget->move(mainPos.x() + this->width()/2 - (m_QSYMessageWidget->width())/2, mainPos.y() + this->height()/2 - (m_QSYMessageWidget->height())/2);
+			  m_QSYMessageWidget->raise();
+			  m_QSYMessageWidget->activateWindow();	
+		  }
+	  }	  
+  }
+}
+//end w3sz
 
 void MainWindow::on_actionSettings_triggered()               //Setup Dialog
 {
@@ -2863,6 +2998,8 @@ void MainWindow::closeEvent(QCloseEvent * e)
   m_config.transceiver_offline ();
   writeSettings ();
   if(m_astroWidget) m_astroWidget.reset ();
+  if(m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset ();  //w3sz
+  if(m_QSYMessageWidget) m_QSYMessageWidget.reset ();  //w3sz
   m_guiTimer.stop ();
   m_prefixes.reset ();
   m_shortcuts.reset ();
@@ -3107,6 +3244,31 @@ void MainWindow::on_actionAstronomical_data_toggled (bool checked)
       m_astroWidget.reset ();
     }
 }
+
+
+//start w3sz
+void MainWindow::on_actionQSYMessage_Creator_toggled (bool checked)
+{
+  if (checked)
+    {
+	  m_QSYMessageCreatorWidget.reset (new QSYMessageCreator);
+	  
+      // hook up termination signal
+      connect (this, &MainWindow::finished, &QSYMessageCreator::close);
+	  //connect to signal from QSYMessageCreator
+      connect (m_QSYMessageCreatorWidget.data (), &QSYMessageCreator::sendMessage, this, &MainWindow::update_tx5);
+	  QPoint mainPos = this->mapToGlobal(QPoint(0,0));
+      m_QSYMessageCreatorWidget->showNormal();
+	  m_QSYMessageCreatorWidget->move(mainPos.x() + this->width() - (m_QSYMessageCreatorWidget->width()), mainPos.y()) ;
+	  m_QSYMessageCreatorWidget->raise();
+	  m_QSYMessageCreatorWidget->activateWindow();	
+    }
+  else
+    {
+      m_QSYMessageCreatorWidget.reset ();
+    }
+}
+//end w3sz
 
 void MainWindow::on_fox_log_action_triggered()
 {
@@ -4189,8 +4351,16 @@ void MainWindow::readFromStdout()                             //readFromStdout
   }
   while(proc_jt9.canReadLine()) {
     auto line_read = proc_jt9.readLine ();
-    if (m_mode == "FT8" and m_specOp == SpecOp::FOX and m_ActiveStationsWidget != NULL) { // see if we should add this to ActiveStations window
+	
+  //start w3sz  
       QString the_line = QString(line_read);
+  if(m_QSYMessageCreatorWidget) showQSYMessage(the_line);
+  //end w3sz except for commenting out the now-redundant line below:  //w3sz QString the_line = QString(line_read);
+
+		
+    if (m_mode == "FT8" and m_specOp == SpecOp::FOX and m_ActiveStationsWidget != NULL) { // see if we should add this to ActiveStations window
+      //w3sz QString the_line = QString(line_read);	  
+	  
       if (!m_ActiveStationsWidget->wantedOnly() ||
           (the_line.contains(" " + m_config.my_callsign() + " ") ||
            the_line.contains(" <" + m_config.my_callsign() + "> ")))

@@ -41,6 +41,8 @@
 #include "Network/PSKReporter.hpp"
 #include "logbook/logbook.h"
 #include "astro.h"
+#include "widgets/QSYMessageCreator.h" //w3sz
+#include "widgets/QSYMessage.h" //w3sz
 #include "MessageBox.hpp"
 #include "Network/NetworkAccessManager.hpp"
 
@@ -144,6 +146,7 @@ private:
   void closeEvent(QCloseEvent *) override;
   void childEvent(QChildEvent *) override;
   bool eventFilter(QObject *, QEvent *) override;
+  void showQSYMessage(QString message); //w3sz this shows received QSY Message
 
 private slots:
   void initialize_fonts ();
@@ -270,6 +273,7 @@ private slots:
   void handle_transceiver_update (Transceiver::TransceiverState const&);
   void handle_transceiver_failure (QString const& reason);
   void on_actionAstronomical_data_toggled (bool);
+  void on_actionQSYMessage_Creator_toggled(bool);  //w3sz
   void on_actionShort_list_of_add_on_prefixes_and_suffixes_triggered();
   void band_changed (Frequency);
   void monitor (bool);
@@ -349,6 +353,8 @@ private slots:
   void callSandP2(int nline);
   void refreshHoundQueueDisplay();
   void queueActiveWindowHound2(QString text);
+  void update_tx5(const QString &qsy_text); //w3sz
+  void reply_tx5(const QString &qsy_text); //w3sz
 
 private:
   Q_SIGNAL void initializeAudioOutputStream (QAudioDeviceInfo,
@@ -413,6 +419,8 @@ private:
   QScopedPointer<FastGraph> m_fastGraph;
   QScopedPointer<LogQSO> m_logDlg;
   QScopedPointer<Astro> m_astroWidget;
+  QScopedPointer<QSYMessageCreator> m_QSYMessageCreatorWidget; //w3sz
+  QScopedPointer<QSYMessage> m_QSYMessageWidget; //w3sz
   QScopedPointer<HelpTextWindow> m_shortcuts;
   QScopedPointer<HelpTextWindow> m_prefixes;
   QScopedPointer<HelpTextWindow> m_mouseCmnds;

@@ -2138,7 +2138,7 @@ void MainWindow::showQSYMessage(QString message)
   QString qDXCall = ui->dxCallEntry->text();
   if(the_line.contains(qCall + QString(" ")))
   {	  
-	  QStringList bhList = the_line.split(" ",Qt::SkipEmptyParts);
+	  QStringList bhList = the_line.split(" ",SkipEmptyParts);
 	  qsizetype index = (bhList.indexOf(qCall)); 
 	  if(index != (-1))
 	  {
@@ -2196,7 +2196,7 @@ void MainWindow::showQSYMessage(QString message)
   {  
 	  if ((the_line.contains("OKQSY") || the_line.contains("NOQSY")) )
 	  { 	  
-		  QStringList bhList = the_line.split(" ",Qt::SkipEmptyParts);
+		  QStringList bhList = the_line.split(" ",SkipEmptyParts);
 		  qsizetype index = (bhList.indexOf(qDXCall)); 
 		  if(index != (-1))
 		  {	

@@ -41,8 +41,12 @@ void QSYMessage::getBandModeFreq()
 {
 	if(receivedMessage.at(0) =='$' && receivedMessage.size() >= 5)
 	{
-		QStringList bhList = receivedMessage.split(" ",Qt::SkipEmptyParts); 
-		ui->label->setText(bhList[1]);
+#if QT_VERSION >= QT_VERSION_CHECK (5, 15, 0)
+    QStringList bhList = receivedMessage.split(" ",Qt::SkipEmptyParts);
+#else
+    QStringList bhList = receivedMessage.split(" ",QString::SkipEmptyParts);
+#endif
+    ui->label->setText(bhList[1]);
 		ui->label_2->setText("replied");	
 		ui->label_3->setText(bhList[2].mid(0,2));	
 		ui->yesButton->hide();

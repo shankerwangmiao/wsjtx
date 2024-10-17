@@ -93,8 +93,8 @@
 #include "ui_mainwindow.h"
 #include "moc_mainwindow.cpp"
 #include "Logger.hpp"
-#include "widgets/QSYMessage.h" //w3sz
-#include "widgets/QSYMessageCreator.h" //w3sz
+#include "widgets/QSYMessage.h"
+#include "widgets/QSYMessageCreator.h"
 
 #define FCL fortran_charlen_t
 
@@ -1189,8 +1189,8 @@ void MainWindow::on_the_minute ()
 MainWindow::~MainWindow()
 {
   if(m_astroWidget) m_astroWidget.reset ();
-  if(m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset (); //w3sz
-  if(m_QSYMessageWidget) m_QSYMessageWidget.reset (); //w3sz
+  if(m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset ();
+  if(m_QSYMessageWidget) m_QSYMessageWidget.reset ();
   auto fname {QDir::toNativeSeparators(m_config.writeable_data_dir ().absoluteFilePath ("wsjtx_wisdom.dat"))};  
   fftwf_export_wisdom_to_filename (fname.toLocal8Bit ());
   m_audioThread.quit ();
@@ -1325,7 +1325,6 @@ void MainWindow::writeSettings()
   m_settings->endGroup();
 }
 
-//start w3sz
 void MainWindow::update_tx5(const QString &qsy_text)
 {
 	if((ui->tx5->findText(qsy_text)) == -1)
@@ -1363,7 +1362,6 @@ void MainWindow::setQSYMessageCreatorStatus(const bool &QSYMessageCreatorValue)
 {
 	m_QSYMessageCreatorValue = QSYMessageCreatorValue;
 }
-//end w3sz
 
 //---------------------------------------------------------- readSettings()
 void MainWindow::readSettings()
@@ -2056,11 +2054,7 @@ void MainWindow::fastSink(qint64 frames)
     bool stdMsg = decodedtext.report(m_baseCall,
                   Radio::base_callsign(ui->dxCallEntry->text()),m_rptRcvd);
     if (stdMsg) pskPost (decodedtext);	
-	
-  //start w3sz
-   if(m_QSYMessageCreatorWidget && m_QSYMessageCheckBoxValue && m_QSYMessageCreatorValue) showQSYMessage(message);
-  //end w3sz 
-	
+    if(m_QSYMessageCreatorWidget && m_QSYMessageCheckBoxValue && m_QSYMessageCreatorValue) showQSYMessage(message);
   }
 
   float fracTR=float(k)/(12000.0*m_TRperiod);
@@ -2130,7 +2124,6 @@ void MainWindow::showStatusMessage(const QString& statusMsg)
   statusBar()->showMessage(statusMsg, 5000);
 }
 
-//start w3sz
 void MainWindow::showQSYMessage(QString message)
 {
   QString the_line = message;  
@@ -2224,7 +2217,6 @@ void MainWindow::showQSYMessage(QString message)
 	  }	  
   }
 }
-//end w3sz
 
 void MainWindow::on_actionSettings_triggered()               //Setup Dialog
 {
@@ -3008,8 +3000,8 @@ void MainWindow::closeEvent(QCloseEvent * e)
   m_config.transceiver_offline ();
   writeSettings ();
   if(m_astroWidget) m_astroWidget.reset (); 
-  if(m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset ();  //w3sz
-  if(m_QSYMessageWidget) m_QSYMessageWidget.reset ();  //w3sz
+  if(m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset ();
+  if(m_QSYMessageWidget) m_QSYMessageWidget.reset ();
   m_guiTimer.stop ();
   m_prefixes.reset ();
   m_shortcuts.reset ();
@@ -3255,9 +3247,6 @@ void MainWindow::on_actionAstronomical_data_toggled (bool checked)
     }
 }
 
-
-//start w3sz
-//void MainWindow::on_actionQSYMessage_Creator_toggled (bool checked)
 void MainWindow::on_actionQSYMessage_Creator_triggered()
 {
     if (!m_QSYMessageCreatorWidget)
@@ -3278,7 +3267,6 @@ void MainWindow::on_actionQSYMessage_Creator_triggered()
 	  m_QSYMessageCreatorWidget->activateWindow();	
     
 }
-//end w3sz
 
 void MainWindow::on_fox_log_action_triggered()
 {
@@ -4361,16 +4349,9 @@ void MainWindow::readFromStdout()                             //readFromStdout
   }
   while(proc_jt9.canReadLine()) {
     auto line_read = proc_jt9.readLine ();
-	
-  //start w3sz  
-  QString the_line = QString(line_read);
-  if(m_QSYMessageCreatorWidget && m_QSYMessageCheckBoxValue && m_QSYMessageCreatorValue) showQSYMessage(the_line);
-  //end w3sz except for commenting out the now-redundant line below:  //w3sz QString the_line = QString(line_read);
-
-		
+    QString the_line = QString(line_read);
+    if(m_QSYMessageCreatorWidget && m_QSYMessageCheckBoxValue && m_QSYMessageCreatorValue) showQSYMessage(the_line);
     if (m_mode == "FT8" and m_specOp == SpecOp::FOX and m_ActiveStationsWidget != NULL) { // see if we should add this to ActiveStations window
-      //w3sz QString the_line = QString(line_read);	  
-	  
       if (!m_ActiveStationsWidget->wantedOnly() ||
           (the_line.contains(" " + m_config.my_callsign() + " ") ||
            the_line.contains(" <" + m_config.my_callsign() + "> ")))

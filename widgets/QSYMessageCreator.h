@@ -1,5 +1,4 @@
 // -*- Mode: C++ -*-
-//this file by w3sz
 #ifndef QSYMESSAGECREATOR_H
 #define QSYMESSAGECREATOR_H
 #include <QWidget>

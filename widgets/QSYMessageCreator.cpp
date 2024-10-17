@@ -1,4 +1,3 @@
-// this file by w3sz
 #include <QApplication>
 #include <QButtonGroup>
 #include <QMessageBox>

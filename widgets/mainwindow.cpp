@@ -1191,7 +1191,7 @@ MainWindow::~MainWindow()
   if(m_astroWidget) m_astroWidget.reset ();
   if(m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset (); //w3sz
   if(m_QSYMessageWidget) m_QSYMessageWidget.reset (); //w3sz
-  auto fname {QDir::toNativeSeparators(m_config.writeable_data_dir ().absoluteFilePath ("wsjtx_wisdom.dat"))};
+  auto fname {QDir::toNativeSeparators(m_config.writeable_data_dir ().absoluteFilePath ("wsjtx_wisdom.dat"))};  
   fftwf_export_wisdom_to_filename (fname.toLocal8Bit ());
   m_audioThread.quit ();
   m_audioThread.wait ();
@@ -1352,6 +1352,16 @@ void MainWindow::reply_tx5(const QString &qsy_reply)
 		ui->tx5->setCurrentIndex(ui->tx5->findText(qsy_reply));
 	}	
 	ui->txb5->click();
+}
+
+void MainWindow::update_QSYMessageCreatorCheckBoxStatus(const bool &chkBoxValue)
+{
+	m_QSYMessageCheckBoxValue = chkBoxValue;
+}
+
+void MainWindow::setQSYMessageCreatorStatus(const bool &QSYMessageCreatorValue)
+{
+	m_QSYMessageCreatorValue = QSYMessageCreatorValue;
 }
 //end w3sz
 
@@ -2045,10 +2055,10 @@ void MainWindow::fastSink(qint64 frames)
     write_all("Rx",message);
     bool stdMsg = decodedtext.report(m_baseCall,
                   Radio::base_callsign(ui->dxCallEntry->text()),m_rptRcvd);
-    if (stdMsg) pskPost (decodedtext);
+    if (stdMsg) pskPost (decodedtext);	
 	
   //start w3sz
-   if(m_QSYMessageCreatorWidget) showQSYMessage(message);
+   if(m_QSYMessageCreatorWidget && m_QSYMessageCheckBoxValue && m_QSYMessageCreatorValue) showQSYMessage(message);
   //end w3sz 
 	
   }
@@ -2173,7 +2183,7 @@ void MainWindow::showQSYMessage(QString message)
 			  connect (this, &MainWindow::finished, &QSYMessage::close);
 			  
 			  //connect to signal from QSYMessage
-			  connect (m_QSYMessageWidget.data (), &QSYMessage::sendReply, this, &MainWindow::reply_tx5); 			  
+			  connect (m_QSYMessageWidget.data (), &QSYMessage::sendReply, this, &MainWindow::reply_tx5,Qt::UniqueConnection); 			  
 			  QPoint mainPos = this->mapToGlobal(QPoint(0,0));
 			  m_QSYMessageWidget->show();
 			  m_QSYMessageWidget->move(mainPos.x() + this->width()/2 - (m_QSYMessageWidget->width())/2, mainPos.y() + this->height()/2 - (m_QSYMessageWidget->height())/2);
@@ -2997,7 +3007,7 @@ void MainWindow::closeEvent(QCloseEvent * e)
   m_valid = false;              // suppresses subprocess errors
   m_config.transceiver_offline ();
   writeSettings ();
-  if(m_astroWidget) m_astroWidget.reset ();
+  if(m_astroWidget) m_astroWidget.reset (); 
   if(m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset ();  //w3sz
   if(m_QSYMessageWidget) m_QSYMessageWidget.reset ();  //w3sz
   m_guiTimer.stop ();
@@ -3247,26 +3257,26 @@ void MainWindow::on_actionAstronomical_data_toggled (bool checked)
 
 
 //start w3sz
-void MainWindow::on_actionQSYMessage_Creator_toggled (bool checked)
+//void MainWindow::on_actionQSYMessage_Creator_toggled (bool checked)
+void MainWindow::on_actionQSYMessage_Creator_triggered()
 {
-  if (checked)
+    if (!m_QSYMessageCreatorWidget)
     {
 	  m_QSYMessageCreatorWidget.reset (new QSYMessageCreator);
-	  
       // hook up termination signal
       connect (this, &MainWindow::finished, &QSYMessageCreator::close);
 	  //connect to signal from QSYMessageCreator
-      connect (m_QSYMessageCreatorWidget.data (), &QSYMessageCreator::sendMessage, this, &MainWindow::update_tx5);
+      connect (m_QSYMessageCreatorWidget.data (), &QSYMessageCreator::sendMessage, this, &MainWindow::update_tx5);	
+      connect (m_QSYMessageCreatorWidget.data (), &QSYMessageCreator::sendChkBoxChange, this, &MainWindow::update_QSYMessageCreatorCheckBoxStatus);	 
+      connect (m_QSYMessageCreatorWidget.data (), &QSYMessageCreator::sendQSYMessageCreatorStatus, this, &MainWindow::setQSYMessageCreatorStatus);	  
+	}	  
+	  m_QSYMessageCreatorValue = true;
 	  QPoint mainPos = this->mapToGlobal(QPoint(0,0));
       m_QSYMessageCreatorWidget->showNormal();
 	  m_QSYMessageCreatorWidget->move(mainPos.x() + this->width() - (m_QSYMessageCreatorWidget->width()), mainPos.y()) ;
 	  m_QSYMessageCreatorWidget->raise();
 	  m_QSYMessageCreatorWidget->activateWindow();	
-    }
-  else
-    {
-      m_QSYMessageCreatorWidget.reset ();
-    }
+    
 }
 //end w3sz
 
@@ -4353,8 +4363,8 @@ void MainWindow::readFromStdout()                             //readFromStdout
     auto line_read = proc_jt9.readLine ();
 	
   //start w3sz  
-      QString the_line = QString(line_read);
-  if(m_QSYMessageCreatorWidget) showQSYMessage(the_line);
+  QString the_line = QString(line_read);
+  if(m_QSYMessageCreatorWidget && m_QSYMessageCheckBoxValue && m_QSYMessageCreatorValue) showQSYMessage(the_line);
   //end w3sz except for commenting out the now-redundant line below:  //w3sz QString the_line = QString(line_read);
 
 		

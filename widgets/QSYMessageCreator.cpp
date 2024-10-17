@@ -14,7 +14,6 @@
 {
   ui->setupUi(this);
   setWindowTitle ("QSYMessageCreator");
-  this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint  | Qt::WindowMinimizeButtonHint);
 }
 
 QSYMessageCreator::~QSYMessageCreator()
@@ -45,6 +44,17 @@ void QSYMessageCreator::on_button1_clicked()
 	QString message = "$DX " + band + mode + kHzStr;
 	ui->messageLabel->setText(message);
 	Q_EMIT sendMessage(message);
+}
+
+void QSYMessageCreator::on_showMessagesChkBox_stateChanged()
+{
+	bool chkBoxValue = ui->showMessagesChkBox->isChecked();	
+	Q_EMIT sendChkBoxChange(chkBoxValue);
+}
+
+void QSYMessageCreator::setQSYMessageCreatorStatusFalse()
+{
+	Q_EMIT sendQSYMessageCreatorStatus(false);
 }
 
 QString QSYMessageCreator::getBand()

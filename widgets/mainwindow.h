@@ -273,7 +273,7 @@ private slots:
   void handle_transceiver_update (Transceiver::TransceiverState const&);
   void handle_transceiver_failure (QString const& reason);
   void on_actionAstronomical_data_toggled (bool);
-  void on_actionQSYMessage_Creator_toggled(bool);  //w3sz
+  void on_actionQSYMessage_Creator_triggered();  //w3sz
   void on_actionShort_list_of_add_on_prefixes_and_suffixes_triggered();
   void band_changed (Frequency);
   void monitor (bool);
@@ -355,6 +355,8 @@ private slots:
   void queueActiveWindowHound2(QString text);
   void update_tx5(const QString &qsy_text); //w3sz
   void reply_tx5(const QString &qsy_text); //w3sz
+  void update_QSYMessageCreatorCheckBoxStatus(const bool &chkBoxValue); //w3sz
+  void setQSYMessageCreatorStatus(const bool &QSYMessageCreatorValue);  //w3sz
 
 private:
   Q_SIGNAL void initializeAudioOutputStream (QAudioDeviceInfo,
@@ -434,6 +436,8 @@ private:
   QString m_lastBand;
   QString m_lastCallsign;
   Frequency  m_dialFreqRxWSPR;  // best guess at WSPR QRG
+  bool m_QSYMessageCheckBoxValue = true; //w3sz
+  bool m_QSYMessageCreatorValue = false; //w3sz
 
   Detector * m_detector;
   unsigned m_FFTSize;

@@ -4,6 +4,7 @@
 #define QSYMESSAGECREATOR_H
 #include <QWidget>
 #include <QObject>
+#include <QCloseEvent> 
 
 namespace Ui {
   class QSYMessageCreator;
@@ -22,10 +23,16 @@ protected:
     void showEvent(QShowEvent *event) override {
         QWidget::showEvent(event); // Call the base class implementation        
         setup();
-    }  
+    }  void closeEvent(QCloseEvent *event) override {
+        // Custom close handling
+	    setQSYMessageCreatorStatusFalse();     
+		event->accept();
+    }
   
 signals:
-  void sendMessage(const QString &value);  
+  void sendMessage(const QString &value); 
+  void sendChkBoxChange(const bool &value);  
+  void sendQSYMessageCreatorStatus(const bool &value);
   
 private:
   Ui::QSYMessageCreator *ui;
@@ -33,8 +40,10 @@ private:
   QString getMode(QString band);
   
 private slots:
-void on_button1_clicked();
-void setup();
+  void on_button1_clicked();
+  void on_showMessagesChkBox_stateChanged();
+  void setup();
+  void setQSYMessageCreatorStatusFalse();
 };
 
 #endif //QSYMESSAGECREATOR_H

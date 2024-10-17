@@ -3889,7 +3889,7 @@ QPushButton[state=&quot;ok&quot;] {
   </action>
   <action name="actionQSYMessage_Creator">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>QSYMessage Creator</string>

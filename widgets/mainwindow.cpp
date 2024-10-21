@@ -1240,6 +1240,7 @@ void MainWindow::writeSettings()
   m_settings->setValue ("FoxLogDisplayed", m_foxLogWindow && m_foxLogWindow->isVisible ());
   m_settings->setValue ("ContestLogDisplayed", m_contestLogWindow && m_contestLogWindow->isVisible ());
   m_settings->setValue ("ActiveStationsDisplayed", m_ActiveStationsWidget && m_ActiveStationsWidget->isVisible ());
+  m_settings->setValue ("QSYMessageCreatorDisplayed", m_QSYMessageCreatorWidget && m_QSYMessageCreatorWidget->isVisible ());
   m_settings->setValue("RespondCQ",ui->respondComboBox->currentIndex());
   m_settings->setValue("HoundSort",ui->comboBoxHoundSort->currentIndex());
   m_settings->setValue("FoxNlist",ui->sbNlist->value());
@@ -1334,8 +1335,11 @@ void MainWindow::update_tx5(const QString &qsy_text)
     ui->tx5->setCurrentIndex(ui->tx5->findText(qsy_text));
   }
   ui->txb5->click();
-  if(!m_auto) ui->autoButton->click();
-  QTimer::singleShot (1900*m_TRperiod, [=] {if(m_auto)ui->autoButton->click();});
+  stopWRTimer.stop();
+  if(m_hisCall!="" && !m_auto) {
+    ui->autoButton->click();
+    stopWRTimer.start(int(1750.0*m_TRperiod));
+  }
 }
 
 void MainWindow::reply_tx5(const QString &qsy_reply)
@@ -1347,8 +1351,9 @@ void MainWindow::reply_tx5(const QString &qsy_reply)
     ui->tx5->setCurrentIndex(ui->tx5->findText(qsy_reply));
   }
   ui->txb5->click();
+  stopWRTimer.stop();
   if(!m_auto) ui->autoButton->click();
-  QTimer::singleShot (1900*m_TRperiod, [=] {if(m_auto)ui->autoButton->click();});
+  stopWRTimer.start(int(1750.0*m_TRperiod));
 }
 
 void MainWindow::update_QSYMessageCreatorCheckBoxStatus(const bool &chkBoxValue)
@@ -1388,6 +1393,7 @@ void MainWindow::readSettings()
   auto displayFoxLog = m_settings->value ("FoxLogDisplayed", false).toBool ();
   auto displayContestLog = m_settings->value ("ContestLogDisplayed", false).toBool ();
   bool displayActiveStations = m_settings->value ("ActiveStationsDisplayed", false).toBool ();
+  bool displayQSYMessageCreator = m_settings->value ("QSYMessageCreatorDisplayed", false).toBool ();
   ui->respondComboBox->setCurrentIndex(m_settings->value("RespondCQ",0).toInt());
   ui->comboBoxHoundSort->setCurrentIndex(m_settings->value("HoundSort",3).toInt());
   ui->sbNlist->setValue(m_settings->value("FoxNlist",12).toInt());
@@ -1548,6 +1554,7 @@ void MainWindow::readSettings()
   if (displayFoxLog) on_fox_log_action_triggered ();
   if (displayContestLog) on_contest_log_action_triggered ();
   if (displayActiveStations) on_actionActiveStations_triggered();
+  if (displayQSYMessageCreator) on_actionQSYMessage_Creator_triggered();
 }
 
 void MainWindow::checkMSK144ContestType()
@@ -2824,7 +2831,7 @@ void MainWindow::statusChanged()
     ui->actionQSYMessage_Creator->setVisible(true);
   } else {
     ui->actionQSYMessage_Creator->setVisible(false);
-    if(m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset();
+    if (m_QSYMessageCreatorWidget) m_QSYMessageCreatorWidget.reset();
   }
 }
 

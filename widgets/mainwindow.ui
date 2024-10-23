@@ -3254,6 +3254,7 @@ QPushButton[state=&quot;ok&quot;] {
     <addaction name="actionActiveStations"/>
     <addaction name="actionSWL_Mode"/>
     <addaction name="actionQSYMessage_Creator"/>
+    <addaction name="actionEnable_QSY_Popups"/>
    </widget>
    <widget class="QMenu" name="menuDecode">
     <property name="title">
@@ -3893,6 +3894,14 @@ QPushButton[state=&quot;ok&quot;] {
    </property>
    <property name="text">
     <string>QSYMessage Creator</string>
+   </property>
+  </action>
+  <action name="actionEnable_QSY_Popups">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable QSY Popups</string>
    </property>
   </action>
  </widget>

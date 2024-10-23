@@ -5,6 +5,8 @@
 #include <QObject>
 #include <QCloseEvent>
 
+class QSettings;
+class Configuration;
 namespace Ui {
   class QSYMessageCreator;
 }
@@ -15,18 +17,14 @@ class QSYMessageCreator
   Q_OBJECT
 
 public:
-  explicit QSYMessageCreator(QWidget * parent = 0);
+  explicit QSYMessageCreator(QSettings * settings, Configuration const *, QWidget * parent = 0);
   ~QSYMessageCreator();
 
 protected:
   void showEvent(QShowEvent *event) override {
-    QWidget::showEvent(event); // Call the base class implementation
-    setup();
-  }  void closeEvent(QCloseEvent *event) override {
-    // Custom close handling
-    setQSYMessageCreatorStatusFalse();
-    event->accept();
+    QWidget::showEvent(event); // Call the base class implementation    
   }
+  void closeEvent(QCloseEvent *event) override;
 
 signals:
   void sendMessage(const QString &value);
@@ -34,15 +32,21 @@ signals:
   void sendQSYMessageCreatorStatus(const bool &value);
 
 private:
+  QSettings * settings_;
+  Configuration const * configuration_;
+
   Ui::QSYMessageCreator *ui;
   QString getBand();
+  void setBand(QString band);
+  void setMode(QString band, QString mode);
   QString getMode(QString band);
+  QString WriteMessage(QString band, QString mode);
 
 private slots:
   void on_button1_clicked();
-  void on_showMessagesChkBox_stateChanged();
-  void setup();
   void setQSYMessageCreatorStatusFalse();
+  void read_settings ();
+  void write_settings ();
 };
 
 #endif //QSYMESSAGECREATOR_H

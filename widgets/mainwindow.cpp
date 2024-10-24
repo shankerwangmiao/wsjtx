@@ -4329,6 +4329,10 @@ void MainWindow::callSandP2(int n)
     } else if((ms-ms0)<=500) {
       ui->autoButton->click(); // Enable Tx again, on double click
     }
+    if(m_mode=="Q65" && m_ActiveStationsWidget!=NULL) {
+      setRig (m_freqNominal);
+      setXIT (ui->TxFreqSpinBox->value ());
+    }
   } else {
     if(ui->autoButton->isChecked()) {
       if((ms-ms0)<=500) ui->autoButton->click(); // Disable Tx on double click

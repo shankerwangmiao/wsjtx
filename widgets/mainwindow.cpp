@@ -4544,14 +4544,14 @@ void MainWindow::readFromStdout()                             //readFromStdout
               callsign = otp_parts[0];
               otp = otp_parts[1];
               hz = lineparts[3].toInt();
-              if (!m_config.ShowOTP()) filtered = true;
+              if (!m_config.ShowOTP() or decodedtext0.mid(24,-1).contains(" 000000")) filtered = true;
             } else
             {
               // split $VERIFY$ K8R 920749 into K8R and 920749
               callsign = lineparts[6];
               otp = lineparts[7];
               hz = 750; // SF is 750
-              if (!m_config.ShowOTP()) filtered = true;
+              if (!m_config.ShowOTP() or decodedtext0.mid(24,-1).contains(" 000000")) filtered = true;
             }
             QDateTime verifyDateTime;
             if (m_diskData) {
@@ -4560,15 +4560,17 @@ void MainWindow::readFromStdout()                             //readFromStdout
               verifyDateTime = QDateTime(QDateTime::currentDateTimeUtc().date(),
                                          QTime::fromString(lineparts[0], "hhmmss"));
             }
-            FoxVerifier *fv = new FoxVerifier(MainWindow::userAgent(),
-                                              &m_network_manager,
-                                              m_config.OTPUrl(),
-                                              callsign, // foxcall
-                                              verifyDateTime,
-                                              otp,
-                                              hz); // freq
-            connect(fv, &FoxVerifier::verifyComplete, this, &MainWindow::handleVerifyMsg);
-            m_verifications << fv;
+            if (!decodedtext0.mid(24,-1).contains(" 000000")) {
+              FoxVerifier *fv = new FoxVerifier(MainWindow::userAgent(),
+                                                &m_network_manager,
+                                                m_config.OTPUrl(),
+                                                callsign, // foxcall
+                                                verifyDateTime,
+                                                otp,
+                                                hz); // freq
+              connect(fv, &FoxVerifier::verifyComplete, this, &MainWindow::handleVerifyMsg);
+              m_verifications << fv;
+            }
           }
 #endif
           {

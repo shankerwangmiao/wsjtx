@@ -3802,7 +3802,6 @@ void MainWindow::decodeDone ()
   dec_data.params.nagain=0;
   dec_data.params.ndiskdat=0;
   m_nclearave=0;
-//  pause_jt9 ();
   ui->DecodeButton->setChecked (false);
   decodeBusy(false);
   m_RxLog=0;

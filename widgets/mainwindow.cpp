@@ -2168,7 +2168,7 @@ void MainWindow::showQSYMessage(QString message)
         connect (this, &MainWindow::finished, &QSYMessage::close);
 
         //connect to signal from QSYMessage
-        connect (m_QSYMessageWidget.data (), &QSYMessage::sendReply, this, &MainWindow::reply_tx5,Qt::UniqueConnection);
+        connect (m_QSYMessageWidget.data (), &QSYMessage::sendReply, this, &MainWindow::reply_tx5,static_cast<Qt::ConnectionType>(Qt::UniqueConnection));
         m_QSYMessageWidget->show();
         m_QSYMessageWidget->raise();
         m_QSYMessageWidget->activateWindow();

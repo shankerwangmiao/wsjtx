@@ -7374,6 +7374,7 @@ void MainWindow::on_actionFST4_triggered()
   ui->sbTR->values ({15, 30, 60, 120, 300, 900, 1800});
   ui->sbTR->setValue (m_settings->value ("TRPeriod_FST4", 60).toInt());    // remember sbTR settings by mode
   QTimer::singleShot (50, [=] {on_sbTR_valueChanged (ui->sbTR->value());});
+  ui->txFirstCheckBox->setEnabled(true);
   statusChanged();
   m_bOK_to_chk=true;
   chk_FST4_freq_range();
@@ -7668,6 +7669,7 @@ void MainWindow::on_actionJT4_triggered()
     displayWidgets(nWidgets("11101000000011000011000000000000000000"));
   }
   fast_config(false);
+  ui->txFirstCheckBox->setEnabled(true);
   statusChanged();
 }
 
@@ -7745,6 +7747,7 @@ void MainWindow::on_actionJT9_triggered()
   }
   fast_config(m_bFastMode);
   ui->cbAutoSeq->setVisible(m_bFast9);
+  ui->txFirstCheckBox->setEnabled(true);
   statusChanged();
 }
 
@@ -7807,6 +7810,7 @@ void MainWindow::on_actionJT65_triggered()
     ui->cbAutoSeq->setChecked(false);
     ui->cbAutoSeq->setVisible(false);
   }
+  ui->txFirstCheckBox->setEnabled(true);
   statusChanged();
 }
 
@@ -7882,6 +7886,7 @@ void MainWindow::on_actionQ65_triggered()
         ui->txb1->setEnabled(true);
     }
   }
+  ui->txFirstCheckBox->setEnabled(true);
   statusChanged();
 }
 

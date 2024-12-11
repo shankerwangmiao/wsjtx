@@ -1,0 +1,91 @@
+name: Build on macOS arm
+on: [push]
+jobs:
+    build:
+        runs-on: macos-15
+        steps:
+            - name: Install MacPorts
+              run: |
+                wget "https://github.com/macports/macports-base/releases/download/v2.10.5/MacPorts-2.10.5-15-Sequoia.pkg" -O /tmp/MacPorts.pkg
+                sudo installer -pkg /tmp/MacPorts.pkg -target / -verboseR -dumplog
+                echo "universal_archs arm64" | sudo tee -a /opt/local/etc/macports/macports.conf > /dev/null
+
+            - name: Setup ports cache
+              uses: actions/cache/restore@v4
+              with:
+                key: ports-${{ runner.os }}-${{ github.sha }}
+                path: /tmp/cache-ports
+                restore-keys: |
+                  ports-${{ runner.os }}-${{ github.sha }}
+                  ports-${{ runner.os }}-
+
+            - name: Build ports archive cache
+              run: |
+                mkdir -p /tmp/cache-ports /tmp/keys
+                openssl genrsa -out /tmp/keys/privkey.pem 2048
+                openssl rsa -in /tmp/keys/privkey.pem -pubout -out /tmp/keys/pubkey.pem
+                while IFS= read -r -d $'\0' i <&3; do
+                    echo "Signing $i" >&2
+                    openssl dgst -ripemd160 -sign /tmp/keys/privkey.pem -out "$i.rmd160" "$i"
+                done 3< <(find /tmp/cache-ports -type f -name '*.tbz2' -print0)
+                echo "/tmp/keys/pubkey.pem" | sudo tee -a /opt/local/etc/macports/pubkeys.conf > /dev/null
+                cat << EOF | sudo tee -a /opt/local/etc/macports/archive_sites.conf > /dev/null
+                name Local
+                urls file:///tmp/cache-ports
+                EOF
+                echo "portarchivetype tbz2" | sudo tee -a /opt/local/etc/macports/macports.conf
+                echo "portimage_mode directory_and_archive" | sudo tee -a /opt/local/etc/macports/macports.conf
+
+
+            - name: Install dependencies
+              run: |
+                export PATH="/opt/local/libexec/gnubin:/opt/local/bin:/opt/local/sbin:$PATH"
+                sudo port -N selfupdate
+                sudo port -N install cmake gcc14 libgcc boost fftw-3-single hamlib qt5-qtserialport qt5-qtmultimedia qt5-qtsvg qt5-qttools qt5-sqlite-plugin asciidoctor asciidoc
+                sudo port select --set gcc mp-gcc14
+
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Configure
+              run: |
+                export PATH="/opt/local/libexec/gnubin:/opt/local/bin:/opt/local/sbin:$PATH"
+                cmake . -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath -Wl,/opt/local/lib -Wl,-rpath -Wl,/opt/local/lib/libgcc" -DCMAKE_VERBOSE_MAKEFILE=1
+
+            - name: Build and Package
+              run: |
+                export PATH="/opt/local/libexec/gnubin:/opt/local/bin:/opt/local/sbin:$PATH"
+                make -j$(sysctl -n hw.logicalcpu) package
+
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                name: darwin-arm64.dmg
+                path: "*.dmg"
+
+            - name: Make cache of built ports
+              if: always()
+              id: tar-ports
+              run: |
+                export PATH="/opt/local/libexec/gnubin:/opt/local/bin:/opt/local/sbin:$PATH"
+                find /tmp/cache-ports -type f -name '*.rmd160' -delete
+                cd /opt/local/var/macports/software
+                new_ports=false
+                while IFS= read -r -d $'\0' p <&3; do
+                    if [ -f "/tmp/cache-ports/$p" ]; then
+                        echo "Skipping $p" >&2
+                        continue
+                    fi
+                    echo "Archiving $p" >&2
+                    new_ports=true
+                    mkdir -p "/tmp/cache-ports/$(dirname -- "$p")"
+                    sudo cat "$p" > "/tmp/cache-ports/$p"
+                done 3< <(sudo find . -type f -maxdepth 2 -mindepth 2 -name "*.tbz2" -print0)
+                echo "have_new_ports=${new_ports}" >> "$GITHUB_OUTPUT"
+
+            - name: Save ports cache
+              uses: actions/cache/save@v4
+              if: always() && steps.tar-ports.outcome == 'success' && steps.tar-ports.outputs.have_new_ports == 'true'
+              with:
+                key: ports-${{ runner.os }}-${{ github.sha }}
+                path: /tmp/cache-ports

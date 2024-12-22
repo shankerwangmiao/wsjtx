@@ -13,8 +13,9 @@ SOURCES += \
   widgets/FoxLogWindow.cpp widgets/CabrilloLogWindow.cpp \
   widgets/HelpTextWindow.cpp widgets/RestrictedSpinBox.cpp \
   widgets/LazyFillComboBox.cpp widgets/CheckableItemComboBox.cpp \
-  widgets/QSYMessage.cpp  \ 
-  widgets/QSYMessageCreator.cpp 
+  widgets/QSYMessage.cpp \
+  widgets/QSYMessageCreator.cpp \
+  widgets/qsymonitor.cpp
 
 HEADERS  += \
   widgets/mainwindow.h widgets/plotter.h \
@@ -31,7 +32,8 @@ HEADERS  += \
   widgets/RestrictedSpinBox.hpp \
   widgets/LazyFillComboBox.hpp widgets/CheckableItemComboBox.hpp \
   widgets/QSYMessage.h \
-  widgets/QSYMessage.h 
+  widgets/QSYMessageCreator.h \
+  widgets/qsymonitor.h
 
 FORMS    += \
   widgets/mainwindow.ui widgets/about.ui \
@@ -42,5 +44,5 @@ FORMS    += \
   widgets/colorhighlighting.ui widgets/ExportCabrillo.ui \
   widgets/FoxLogWindow.ui widgets/CabrilloLogWindow.ui \
   widgets/QSYMessage.ui \
-  
-  widgets/QSYMessageCreator.ui
+  widgets/QSYMessageCreator.ui \
+  widgets/qsymonitor.ui

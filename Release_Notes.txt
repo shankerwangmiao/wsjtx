@@ -21,7 +21,7 @@ primarily intended for contests. Otherwise, RC8 is primarily a bug-fix
 release of the well-functioning RC7. 
   
  - The WSJT-X Message System can be used to invite your QSO partner to
-   QSY to another ftrequency or mode (e.g. during contests), or to
+   QSY to another frequency or mode (e.g. during contests), or to
    send some general short messages. It consists of the Message
    Creator and the QSY Monitor. Received messages are displayed as
    popups.
@@ -31,7 +31,7 @@ release of the well-functioning RC7.
    - The user interface now prevents users from setting parameters
      that could lead to a subprocess error in the SuperFox decoder.
 
-   - The SuperFos password server is no longer called if the received
+   - The SuperFox password server is no longer called if the received
      OTP (one-time password) is 000000. 
 
    - Protection against several rare but possible bounds errors.

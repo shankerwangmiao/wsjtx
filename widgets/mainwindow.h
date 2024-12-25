@@ -41,6 +41,9 @@
 #include "Network/PSKReporter.hpp"
 #include "logbook/logbook.h"
 #include "astro.h"
+#include "widgets/QSYMessageCreator.h"
+#include "widgets/QSYMessage.h"
+#include "widgets/qsymonitor.h"
 #include "MessageBox.hpp"
 #include "Network/NetworkAccessManager.hpp"
 
@@ -144,6 +147,7 @@ private:
   void closeEvent(QCloseEvent *) override;
   void childEvent(QChildEvent *) override;
   bool eventFilter(QObject *, QEvent *) override;
+  void showQSYMessage(QString message);
 
 private slots:
   void initialize_fonts ();
@@ -270,6 +274,8 @@ private slots:
   void handle_transceiver_update (Transceiver::TransceiverState const&);
   void handle_transceiver_failure (QString const& reason);
   void on_actionAstronomical_data_toggled (bool);
+  void on_actionQSYMessage_Creator_triggered();
+  void on_actionQSY_Monitor_triggered();
   void on_actionShort_list_of_add_on_prefixes_and_suffixes_triggered();
   void band_changed (Frequency);
   void monitor (bool);
@@ -349,6 +355,9 @@ private slots:
   void callSandP2(int nline);
   void refreshHoundQueueDisplay();
   void queueActiveWindowHound2(QString text);
+  void update_tx5(const QString &qsy_text);
+  void reply_tx5(const QString &qsy_text);
+  void setQSYMessageCreatorStatus(const bool &QSYMessageCreatorValue);
 
 private:
   Q_SIGNAL void initializeAudioOutputStream (QAudioDeviceInfo,
@@ -413,6 +422,9 @@ private:
   QScopedPointer<FastGraph> m_fastGraph;
   QScopedPointer<LogQSO> m_logDlg;
   QScopedPointer<Astro> m_astroWidget;
+  QScopedPointer<QSYMessageCreator> m_QSYMessageCreatorWidget;
+  QScopedPointer<QSYMessage> m_QSYMessageWidget;
+  QScopedPointer<QSYMonitor> m_qsymonitorWidget;
   QScopedPointer<HelpTextWindow> m_shortcuts;
   QScopedPointer<HelpTextWindow> m_prefixes;
   QScopedPointer<HelpTextWindow> m_mouseCmnds;
@@ -426,6 +438,8 @@ private:
   QString m_lastBand;
   QString m_lastCallsign;
   Frequency  m_dialFreqRxWSPR;  // best guess at WSPR QRG
+  bool m_QSYMessageCreatorValue = false;
+  bool m_qsymonitorValue = false;
 
   Detector * m_detector;
   unsigned m_FFTSize;

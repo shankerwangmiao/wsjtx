@@ -3253,6 +3253,9 @@ QPushButton[state=&quot;ok&quot;] {
     <addaction name="actionColors"/>
     <addaction name="actionActiveStations"/>
     <addaction name="actionSWL_Mode"/>
+    <addaction name="actionQSYMessage_Creator"/>
+    <addaction name="actionQSY_Monitor"/>
+    <addaction name="actionEnable_QSY_Popups"/>
    </widget>
    <widget class="QMenu" name="menuDecode">
     <property name="title">
@@ -3884,6 +3887,27 @@ QPushButton[state=&quot;ok&quot;] {
   <action name="actionSuperFox_User_Guide">
    <property name="text">
     <string>SuperFox User Guide</string>
+   </property>
+  </action>
+  <action name="actionQSYMessage_Creator">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Message Creator</string>
+   </property>
+  </action>
+  <action name="actionEnable_QSY_Popups">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable Message Popups</string>
+   </property>
+  </action>
+  <action name="actionQSY_Monitor">
+   <property name="text">
+    <string>QSY Monitor</string>
    </property>
   </action>
  </widget>

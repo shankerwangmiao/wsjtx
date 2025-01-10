@@ -1389,8 +1389,8 @@ void MainWindow::readSettings()
   bool displayActiveStations = m_settings->value ("ActiveStationsDisplayed", false).toBool ();
   bool displayQSYMessageCreator = m_settings->value ("QSYMessageCreatorDisplayed", false).toBool ();
   bool displayQSYMonitor = m_settings->value("QSYMonitorDisplayed", false).toBool ();
+  bool enableQSYpopups = m_settings->value("ShowQSYMessages", true).toBool ();
   if(m_config.enable_VHF_features()) ui->actionEnable_QSY_Popups->setVisible(true);
-  ui->actionEnable_QSY_Popups->setChecked(m_settings->value("ShowQSYMessages", true).toBool ());
   ui->respondComboBox->setCurrentIndex(m_settings->value("RespondCQ",0).toInt());
   ui->comboBoxHoundSort->setCurrentIndex(m_settings->value("HoundSort",3).toInt());
   ui->sbNlist->setValue(m_settings->value("FoxNlist",12).toInt());
@@ -1407,9 +1407,9 @@ void MainWindow::readSettings()
   m_mode=m_settings->value("Mode","FT8").toString();
   m_settings->endGroup();
 
-
   // do this outside of settings group because it uses groups internally
   ui->actionAstronomical_data->setChecked (displayAstro);
+  ui->actionEnable_QSY_Popups->setChecked (enableQSYpopups);
 
   // do this in the General group because we save the parameters from various places
   if(m_mode=="JT9") {
@@ -2057,7 +2057,7 @@ void MainWindow::fastSink(qint64 frames)
     bool stdMsg = decodedtext.report(m_baseCall,
                   Radio::base_callsign(ui->dxCallEntry->text()),m_rptRcvd);
     if (stdMsg) pskPost (decodedtext);	
-    if(ui->actionEnable_QSY_Popups->isChecked() || m_qsymonitorWidget->isVisible()) showQSYMessage(message);
+    if(ui->actionEnable_QSY_Popups->isChecked() || m_qsymonitorWidget) showQSYMessage(message);
   }
 
   float fracTR=float(k)/(12000.0*m_TRperiod);
@@ -4357,7 +4357,7 @@ void MainWindow::readFromStdout()                             //readFromStdout
   while(proc_jt9.canReadLine()) {
     auto line_read = proc_jt9.readLine ();
     QString the_line = QString(line_read);
-    if(ui->actionEnable_QSY_Popups->isChecked() || m_qsymonitorWidget->isVisible()) showQSYMessage(the_line);
+    if(ui->actionEnable_QSY_Popups->isChecked() || m_qsymonitorWidget) showQSYMessage(the_line);
     if (m_mode == "FT8" and m_specOp == SpecOp::FOX and m_ActiveStationsWidget != NULL) { // see if we should add this to ActiveStations window
       if (!m_ActiveStationsWidget->wantedOnly() ||
           (the_line.contains(" " + m_config.my_callsign() + " ") ||

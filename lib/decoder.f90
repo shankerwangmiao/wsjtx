@@ -67,7 +67,7 @@ subroutine multimode_decoder(ss,id2,params,nfsample)
   ntr0=params%ntr
   rms=sqrt(dot_product(float(id2(1:180000)),                         &
        float(id2(1:180000)))/180000.0)
-  if(rms.lt.3.0) go to 800
+  if(rms.lt.0.5) go to 800
 
   !cast C character arrays to Fortran character strings
   datetime=transfer(params%datetime, datetime)
@@ -124,8 +124,7 @@ subroutine multimode_decoder(ss,id2,params,nfsample)
 
   if(params%nmode.eq.8) then
 ! We're in FT8 mode
-     
-     if(ncontest.eq.6) then
+     if(ncontest.eq.6) then            !Fox=6, Hound=7
 ! Fox mode: initialize and open houndcallers.txt     
         inquire(file=trim(temp_dir)//'/houndcallers.txt',exist=ex)
         if(.not.ex) then
@@ -140,27 +139,36 @@ subroutine multimode_decoder(ss,id2,params,nfsample)
         open(19,file=trim(temp_dir)//'/houndcallers.txt',status='unknown')
      endif
 
-     call timer('decft8  ',0)
-     newdat=params%newdat
-     if(params%emedelay.ne.0.0) then
-        id2(1:156000)=id2(24001:180000)  ! Drop the first 2 seconds of data
-        id2(156001:180000)=0
-     endif
-     call my_ft8%decode(ft8_decoded,id2,params%nQSOProgress,params%nfqso,    &
-          params%nftx,newdat,params%nutc,params%nfa,params%nfb,              &
-          params%nzhsym,params%ndepth,params%emedelay,ncontest,              &
-          logical(params%nagain),logical(params%lft8apon),                   &
-          logical(params%lapcqonly),params%napwid,mycall,hiscall,            &
-          params%ndiskdat)
-     call timer('decft8  ',1)
-     if(nfox.gt.0) then
-        n30min=minval(n30fox(1:nfox))
-        n30max=maxval(n30fox(1:nfox))
+     if(ncontest.eq.7 .and. params%b_superfox .and. params%b_even_seq) then
+        if(params%nzhsym.lt.50) go to 800
+! Call the superFox decoder
+        call sfrx_sub(params%yymmdd,params%nutc,params%nfqso,params%ntol,id2)
+     else
+        call timer('decft8  ',0)
+        newdat=params%newdat
+        if(params%emedelay.ne.0.0) then
+           id2(1:156000)=id2(24001:180000)  ! Drop the first 2 seconds of data
+           id2(156001:180000)=0
+        endif
+        call my_ft8%decode(ft8_decoded,id2,params%nQSOProgress,params%nfqso, &
+             params%nftx,newdat,params%nutc,params%nfa,params%nfb,           &
+             params%nzhsym,params%ndepth,params%emedelay,ncontest,           &
+             logical(params%nagain),logical(params%lft8apon),                &
+             logical(params%lapcqonly),params%napwid,mycall,hiscall,         &
+             params%ndiskdat)
+        call timer('decft8  ',1)
      endif
      j=0
 
      if(ncontest.eq.6) then
 ! Fox mode: save decoded Hound calls for possible selection by FoxOp
+
+        n=params%nutc
+        n30=(3600*(n/10000) + 60*mod((n/100),100) + mod(n,100))/30
+        if(n30.lt.n30z) nwrap=nwrap+2880    !New UTC day, handle the wrap
+        n30z=n30
+        n30=n30+nwrap
+
         rewind 19
         if(nfox.eq.0) then
            endfile 19
@@ -168,21 +176,23 @@ subroutine multimode_decoder(ss,id2,params,nfsample)
         else
            do i=1,nfox
               n=n30fox(i)
-              if(n30max-n30fox(i).le.4) then
+              nage=min(99,mod(n30-n+288000,2880))
+              if(nage.le.4) then
                  j=j+1
                  c2fox(j)=c2fox(i)
                  g2fox(j)=g2fox(i)
                  nsnrfox(j)=nsnrfox(i)
                  nfreqfox(j)=nfreqfox(i)
                  n30fox(j)=n
-                 m=n30max-n
+                 ! nage=min(99,mod(n30-n+288000,2880))
                  if(len(trim(g2fox(j))).eq.4) then
                     call azdist(mygrid,g2fox(j)//'  ',0.d0,nAz,nEl,nDmiles, &
                          nDkm,nHotAz,nHotABetter)
                  else
                     nDkm=9999
                  endif
-                 write(19,1004) c2fox(j),g2fox(j),nsnrfox(j),nfreqfox(j),nDkm,m
+                 write(19,1004) c2fox(j),g2fox(j),nsnrfox(j),nfreqfox(j), &
+                      nDkm,nage
 1004             format(a12,1x,a4,i5,i6,i7,i3)
               endif
            enddo
@@ -661,10 +671,10 @@ contains
           endif
           b1=i3-i2.eq.5 .and. isgrid4(g2)
           b2=i3-i2.eq.1
-          if(b0 .and. (b1.or.b2) .and. nint(freq).ge.1000) then
+          if(b0 .and. (b1.or.b2) .and. (nint(freq).ge.1000 .or. params%b_superfox)) then
              n=params%nutc
              n30=(3600*(n/10000) + 60*mod((n/100),100) + mod(n,100))/30
-             if(n30.lt.n30z) nwrap=nwrap+5760    !New UTC day, handle the wrap
+             if(n30.lt.n30z) nwrap=nwrap+2880    !New UTC day, handle the wrap
              n30z=n30
              n30=n30+nwrap
              if(nfox.lt.MAXFOX) nfox=nfox+1

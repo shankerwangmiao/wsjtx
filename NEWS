@@ -9,7 +9,247 @@
  \$$      \$$  \$$$$$$   \$$$$$$     \$$        \$$   \$$
                                                          
                                                          
-Copyright 2001 - 2024 by Joe Taylor, K1JT, and the WSJT Development Team
+Copyright 2001 - 2025 by Joe Taylor, K1JT, and the WSJT Development Team
+
+
+                      Release: WSJT-X 2.7.0-rc8
+                           January 6, 2025
+                      -------------------------
+
+WSJT-X 2.7.0 Release Candidate 8 introduces a new Message System,
+primarily intended for contests. Otherwise, RC8 is primarily a bug-fix
+release of the well-functioning RC7. 
+  
+ - The WSJT-X Message System can be used to invite your QSO partner to
+   QSY to another frequency or mode (e.g. during contests), or to
+   send some general short messages. It consists of the Message
+   Creator and the QSY Monitor. Received messages are displayed as
+   popups.
+
+ - Bug fixes and improvements to SuperFox/Hound mode:
+   
+   - The user interface now prevents users from setting parameters
+     that could lead to a subprocess error in the SuperFox decoder.
+
+   - The SuperFox password server is no longer called if the received
+     OTP (one-time password) is 000000. 
+
+   - Protection against several rare but possible bounds errors.
+
+   - Fixed an inconsistency with the Tx even/1st checkbox when 
+     switching from SuperHound mode to any other mode.
+
+   - For SuperFox, it is now ensured that the transceiver Tx dial 
+     frequency is tracked properly with internal program variables.
+
+ - Avoided a potential program crash when Astronomical data window 
+   is not open.
+
+ - More intuitive navigation when WSJT-X is used together with QMAP.
+   A single click in Active Stations window now selects a station to be
+   called; a double-click also activates Enable Tx.
+
+ - Corrected audio issues with some macOS versions.
+
+
+                       Release: WSJT-X 2.7.0-rc7
+                         September 30, 2024
+                      -------------------------
+
+WSJT-X 2.7.0 Release Candidate 7 brings significant improvements for
+the new SuperFox mode. It introduces a new verification system which
+replaces the previous one, and works for both the SuperFox mode and
+for old-style Fox and Hound operation.  All code for SuperFox
+operation is now open source.
+  
+IMPORTANT: OpenSSL v1.1.1 or higher is required for the real-time
+verification of Fox and SuperFox messages.
+
+Enhancements to the SuperFox decoder:
+
+ - Performance of the SuperFox decoder has been further improved.
+
+ - You can now set individual FTol values and tune the decoder to
+   the exact sync frequency of the SuperFox signal if it is not exactly
+   750 Hz. Both result in a better decodability in certain situations.
+
+ - Important: The Rx frequency must be set close to the sync frequency
+   +/- FTol, for example 750 +/- 50 Hz.
+
+Introduction of a new Fox verification system:
+
+ - The new Fox verification system uses one time passwords (OTPs), and 
+   works for the SuperFox mode as well as for old-style Fox and Hound 
+   operation. It can be enabled by the new OTP checkbox on the Advanced
+   tab of the Settings dialog.
+
+ - Fox or SuperFox stations send individual OTPs via radio. Hounds 
+   automatically check the validity of the received OTPs in real time 
+   from a server when there is an internet connection. Otherwise, the 
+   validity can also be queried manually later. OTP verifications can 
+   only be retrieved once the transmission has already taken place.
+
+ - You may optionally display the received OTP values by checking
+   the box "Show OTP messages".
+
+ - If the Fox or SuperFox callsign is verified by receipt of the
+   correct OTP, the background color of the Hound or Super Hound label
+   switches to green.
+
+ - Theoretically, DXpeditions can set up their own OTP server, however, 
+   we recommend using the server at https://www.9dx.cc. 
+
+ - Use of the new Fox verification system requires an OTP key. The
+   system uses open source code and standard encryption
+   technology. For testing purposes, non-verified SuperFox
+   transmissions are now possible without a key.
+
+Improvements to SuperFox/Hound operation:
+
+ - SuperHounds must now first decode the SuperFox before they can
+   call, and a QSO must be started by double-clicking on a SuperFox
+   decode. (Note that calling the Fox blindly not only leads to
+   unnecessary band utilization, but can also significantly reduce the
+   QSO rate due to unanswered (Super)Fox replies.)
+
+ - Switching to SuperHound mode automatically sets the Rx frequency to
+   750 Hz. The previously selected frequency is saved and restored 
+   afterwards.
+
+ - Right-clicking on the H button now activates/deactivates SuperFox mode.
+
+ - A flaw resulting in sub-optimal SuperFox QSO rates has been
+   corrected.
+
+ - SuperFox decoder now does a more thorough job of rejecting QRM from
+   non-SuperFox signals.
+
+ - Fields in the SuperFox payload not otherwise used in a particular
+   transmission are now set to known nonzero values. Do NOT use RC6 or
+   earlier versions to decode SuperFox transmissions from RC7 or 
+   later.
+
+ - Old-style Fox stations can now transmit free text messages (up to
+   13 characters) by using an available stream.
+
+ - Some enhancements useful for Fox operators: Active Station Window now 
+   shows band activity. Hound callsigns can be highlighted via UDP API, and 
+   assigned a score for sorting via UDP API. Fox Tx frequency is preserved 
+   when switching in/out of Fox mode.
+
+ - UDP Status Update messages now include information on how many callsigns
+   have highlighting applied, and how many callsigns have a score assigned.
+
+Other enhancements and fixes:
+
+ - In FT8 mode, the Settings dialog no longer resets the VFO frequency 
+   to band/mode default unless really needed.
+
+ - Several code improvements specifically for macOS.
+
+ - Updated CTY.DAT and Hamlib.
+
+
+                      Release: WSJT-X 2.7.0-rc6
+                             July 19, 2024
+                      -------------------------
+
+WSJT-X 2.7.0 Release Candidate 6 is a bug-fix release primarily
+affecting the new SuperFox mode.  The following bugs have been fixed:
+
+ - Strong signals from Superfox too frequently failed to decode.
+
+ - SuperFox sometimes sent incorrect signal reports and an invalid
+   digital signature.
+
+ - A Fortran bounds error could sometimes occur in the SuperFox
+   decoder.
+
+ - For SuperFox operator, the "age" displayed for Hound callers
+   became garbled after the 0000 UTC date change.
+
+ - Decodes of SuperFox transmissions were not posted to PSK Reporter.
+
+ - Some SuperFox-related  messages were posted incorrectly to ALL.TXT.
+
+ - Logic for turning the SuperHound label green was flawed in some
+   circumstances.
+
+Release Candidate 6 also includes updates to Hamlib and the Chinese
+user interface translation.
+
+                      Release: WSJT-X 2.7.0-rc5
+                             July 1, 2024
+                      -------------------------
+
+WSJT-X 2.7.0 Release Candidate 5 introduces "SuperFox" mode, a
+powerful new tool designed to help DXpeditions make digital QSOs at
+very high rates. RC5 also brings several other improvements and bug
+fixes.
+
+SuperFox mode:
+
+ - The SuperFox mode behaves operationally like the present Fox and
+   Hounds mode but uses a constant envelope waveform for Fox's
+   transmissions rather than sending concurrent streams of up to five
+   normal FT8 signals. This approach means that up to 9 messages can
+   be transmitted simultaneously with no signal-strength penalty,
+   resulting in a system gain of about +10 dB compared to the
+   conventional Fox/Hound operation with 5 slots.
+
+ - IMPORTANT: Older revisions of WSJT-X and derivative programs will
+   not be able to decode SuperFox transmissions. Hounds must use
+   WSJT-X 2.7.0-rc5 (or a later release, when available) to receive
+   SuperFox messages.
+
+ - Hounds chasing the DX station will transmit normal FT8 signals, as
+   in the old-style Fox and Hound mode.  QSOs will be logged as FT8
+   mode.
+
+ - When using SuperFox mode, Hound stations may call at any frequency
+   in Fox's received passband, including the range 0 - 1000 Hz.
+   Hounds do not QSY to a lower frequency for their final
+   transmission.
+
+ - SuperFox Operation requires the Fox operator to use a valid digital
+   key.  Keys will be issued in advance to legitimate DXpeditions by
+   the Northern California DX Foundation, and will be kept secret.
+
+ - Every SuperFox transmission includes a unique digital signature.
+   Hounds receiving a SuperFox message will see a "<callsign> verified"
+   flag if the transmitted signature is valid, and the on-screen 
+   "Super Hound" label will turn from red to green.
+
+ - Hound operation should begin by selecting "Special operating
+   activity", "Hound", and "SuperFox mode" on the Settings -> Advanced
+   tab. Alternatively, right-clicking on the FT8 button toggles
+   SuperFox mode on/off for either Fox or Hound, allowing quick
+   transitions between SuperFox and old-style Fox and Hound operation.
+
+ - SuperFox stations can send free text messages of up to 26 characters
+   together with messages to as many as 4 Hounds.
+
+Other enhancements:
+
+ - Corrected a flaw that caused "Log automatically" to not work for
+   the ARRL Digi Contest.
+
+ - Control elements for special operating activities are now disabled
+   (grayed out) if the respective function is not applicable.
+
+ - Corrected a longstanding flaw that caused "Start new period
+   decodes at top" to stop working properly after some time.
+
+ - Right-click mouse press events are now less error-prone.
+
+ - Improved the readability of the first line when "Start new period 
+   decodes at top" is checked.
+
+ - 4-digit grids are now logged for certain contest modes to ensure that 
+   the log complies with contest rules.
+
+ - The Fox Tx frequency is now saved and restored separately.
+
 
                       Release: WSJT-X 2.7.0-rc4
                            March 11, 2024
@@ -52,6 +292,8 @@ WSJT-X:
  - Several changes to reduce problems experienced when (contrary to
    our recommendations) messages with short (10-bit) callsign hashes
    are used in standard FT4/FT8 sub-bands.
+
+ - Enhancements useful for Fox operators.
 
                       Release: WSJT-X 2.7.0-rc3
                            January 1, 2024

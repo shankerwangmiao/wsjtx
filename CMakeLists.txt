@@ -50,6 +50,7 @@ project (wsjtx
   )
 set (PROJECT_DESCRIPTION "WSJT-X: Digital Modes for Weak Signal Communications in Amateur Radio")
 set (CMAKE_PROJECT_DESCRIPTION ${PROJECT_DESCRIPTION})
+set (CMAKE_AUTOUIC ON) 
 
 #
 # Local CMake modules and support files
@@ -71,7 +72,7 @@ message (STATUS "******************************************************")
 
 include (set_build_type)
 # RC 0 or omitted is a development build, GA is a General Availability release build
-set_build_type (RC 4)
+set_build_type (RC 8)
 set (wsjtx_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}${BUILD_TYPE_REVISION}")
 
 #
@@ -80,7 +81,7 @@ set (wsjtx_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_
 set (PROJECT_BUNDLE_NAME "WSJT-X")
 set (PROJECT_VENDOR "Joe Taylor, K1JT")
 set (PROJECT_CONTACT "Joe Taylor <k1jt@arrl.net>")
-set (PROJECT_COPYRIGHT "Copyright (C) 2001-2023 by Joe Taylor, K1JT")
+set (PROJECT_COPYRIGHT "Copyright (C) 2001-2025 by Joe Taylor, K1JT")
 set (PROJECT_HOMEPAGE https://wsjt.sourceforge.io/wsjtx.html)
 set (PROJECT_MANUAL wsjtx-main)
 set (PROJECT_MANUAL_DIRECTORY_URL https://wsjt.sourceforge.io/wsjtx-doc/)
@@ -126,6 +127,7 @@ option (WSJT_GENERATE_DOCS "Generate documentation files." ON)
 option (WSJT_RIG_NONE_CAN_SPLIT "Allow split operation with \"None\" as rig.")
 option (WSJT_TRACE_UDP "Debugging option that turns on UDP message protocol diagnostics.")
 option (WSJT_BUILD_UTILS "Build simulators and code demonstrators." ON)
+option (WSJT_FOX_OTP "Enable Fox OTP Verification Messages." ON)
 CMAKE_DEPENDENT_OPTION (WSJT_QDEBUG_IN_RELEASE "Leave Qt debugging statements in Release configuration." OFF
   "NOT is_debug_build" OFF)
 CMAKE_DEPENDENT_OPTION (WSJT_ENABLE_EXPERIMENTAL_FEATURES "Enable features not fully ready for public releases." ON
@@ -160,6 +162,13 @@ endif ()
 
 set (WSJT_PLUGIN_DESTINATION ${PLUGIN_DESTINATION} CACHE PATH "Path for plugins")
 set (WSJT_QT_CONF_DESTINATION ${QT_CONF_DESTINATION} CACHE PATH "Path for the qt.conf file")
+
+if (WSJT_FOX_OTP)
+  set (wsjt_fox_CXXSRCS
+
+  )
+  message (STATUS "Including Fox verification code feature")
+endif ()
 
 #
 # Project sources
@@ -222,6 +231,7 @@ set (wsjt_qt_CXXSRCS
   widgets/DoubleClickableRadioButton.cpp
   Network/LotWUsers.cpp
   Network/FileDownload.cpp
+  Network/FoxVerifier.cpp
   models/DecodeHighlightingModel.cpp
   widgets/DecodeHighlightingListView.cpp
   models/FoxLog.cpp
@@ -241,6 +251,7 @@ set (wsjt_qt_CXXSRCS
   widgets/LazyFillComboBox.cpp
   widgets/CheckableItemComboBox.cpp
   widgets/BandComboBox.cpp
+  otpgenerator.cpp
   )
 
 set (wsjt_qtmm_CXXSRCS
@@ -284,6 +295,9 @@ set (wsjtx_CXXSRCS
   Network/wsprnet.cpp
   WSPR/WSPRBandHopping.cpp
   widgets/ExportCabrillo.cpp
+  widgets/QSYMessage.cpp 
+  widgets/QSYMessageCreator.cpp
+  widgets/qsymonitor.cpp
   )
 
 set (wsjt_CXXSRCS
@@ -291,6 +305,7 @@ set (wsjt_CXXSRCS
   lib/crc10.cpp
   lib/crc13.cpp
   lib/crc14.cpp
+  ${wsjt_fox_CXXSRCS}
   )
 # deal with a GCC v6 UB error message
 set_source_files_properties (
@@ -341,6 +356,10 @@ set (wsjt_FSRCS
   lib/wavhdr.f90
   lib/qra/q65/q65_encoding_modules.f90
   lib/ft8/ft8_a7.f90
+  lib/superfox/sfox_mod.f90
+  lib/superfox/julian.f90
+  lib/superfox/popen_module.f90
+  lib/superfox/qpc/qpc_mod.f90
 
   # remaining non-module sources
   lib/addit.f90
@@ -426,7 +445,7 @@ set (wsjt_FSRCS
   lib/fspread_lorentz.f90
   lib/ft8/foxfilt.f90
   lib/ft8/foxgen.f90
-  lib/ft8/foxgen_wrap.f90
+#  lib/ft8/foxgen_wrap.f90
   lib/freqcal.f90
   lib/ft8/ft8apset.f90
   lib/ft8/ft8b.f90
@@ -585,6 +604,27 @@ set (wsjt_FSRCS
   lib/fst4/get_crc24.f90
   lib/fst4/fst4_baseline.f90
   lib/77bit/hash22calc.f90
+
+  lib/superfox/foxgen2.f90
+  lib/superfox/qpc_decode2.f90
+  lib/superfox/qpc_likelihoods2.f90
+  lib/superfox/qpc_snr.f90
+  lib/superfox/qpc_sync.f90
+  lib/superfox/sfox_ana.f90
+  lib/superfox/sfox_assemble.f90
+  lib/superfox/sfox_demod.f90
+  lib/superfox/sfox_pack.f90
+  lib/superfox/sfox_remove_ft8.f90
+  lib/superfox/sfox_remove_tone.f90
+  lib/superfox/sfox_unpack.f90
+  lib/superfox/sfox_wave.f90
+  lib/superfox/sfox_wave_gfsk.f90
+  lib/superfox/sfrx_sub.f90
+  lib/superfox/sftx_sub.f90
+  lib/superfox/twkfreq2.f90
+  lib/superfox/sfox_gen_gfsk.f90
+  lib/superfox/ran1.f90
+  lib/superfox/sfoxsim.f90
   )
 
 # temporary workaround for a gfortran v7.3 ICE on Fedora 27 64-bit
@@ -627,6 +667,15 @@ set (wsjt_CSRCS
   lib/wrapkarn.c
   ${ldpc_CSRCS}
   ${qra_CSRCS}
+
+  lib/superfox/qpc/dbgprintf.c
+  lib/superfox/qpc/nhash2.c
+  lib/superfox/qpc/np_qpc.c
+  lib/superfox/qpc/np_rnd.c
+  lib/superfox/qpc/qpc_fwht.c
+  lib/superfox/qpc/qpc_n127k50q128.c
+  lib/superfox/qpc/qpc_subs.c
+  
   )
 
 set (wsjt_qt_UISRCS
@@ -668,6 +717,9 @@ set (wsjtx_UISRCS
   widgets/logqso.ui
   Configuration.ui
   widgets/ExportCabrillo.ui
+  widgets/QSYMessage.ui
+  widgets/QSYMessageCreator.ui
+  widgets/qsymonitor.ui
   )
 
 set (UDP_library_CXXSRCS
@@ -900,7 +952,9 @@ check_type_size (CACHE_ALL HAMLIB_OLD_CACHING)
 check_symbol_exists (rig_set_cache_timeout_ms "hamlib/rig.h" HAVE_HAMLIB_CACHING)
 
 find_package (Usb REQUIRED)
-
+if (WSJT_FOX_OTP)
+  add_definitions (-DFOX_OTP)
+endif ()
 #
 # Qt5 setup
 #
@@ -1153,6 +1207,9 @@ target_link_libraries (test_snr wsjt_fort)
 add_executable (q65sim lib/qra/q65/q65sim.f90)
 target_link_libraries (q65sim wsjt_fort wsjt_cxx)
 
+add_executable (cwsim lib/cwsim.f90)
+target_link_libraries (cwsim wsjt_fort wsjt_cxx)
+
 add_executable (q65code lib/qra/q65/q65code.f90)
 target_link_libraries (q65code wsjt_fort wsjt_cxx)
 
@@ -1206,6 +1263,15 @@ target_link_libraries (echosim wsjt_fort wsjt_cxx)
 
 add_executable (ft8sim lib/ft8/ft8sim.f90)
 target_link_libraries (ft8sim wsjt_fort wsjt_cxx)
+
+add_executable (sfoxsim lib/superfox/sfoxsim.f90)
+target_link_libraries (sfoxsim wsjt_fort wsjt_cxx)
+
+add_executable (sfrx lib/superfox/sfrx.f90)
+target_link_libraries (sfrx wsjt_fort wsjt_cxx)
+
+#add_executable (sftx lib/superfox/sftx.f90)
+#target_link_libraries (sftx wsjt_fort wsjt_cxx)
 
 add_executable (msk144sim lib/msk144sim.f90)
 target_link_libraries (msk144sim wsjt_fort wsjt_cxx)
@@ -1291,9 +1357,7 @@ set (LANGUAGES
   ru				# Russian
   #sv				# Swedish
   zh				# Chinese
-  zh_HK				# Chinese per Hong Kong
   zh_TW				# Chinese traditional
-  it				# Italian
   )
 foreach (lang_ ${LANGUAGES})
   file (TO_NATIVE_PATH ${CMAKE_SOURCE_DIR}/translations/wsjtx_${lang_}.ts ts_)
@@ -1596,7 +1660,7 @@ install (TARGETS udp_daemon message_aggregator wsjtx_app_version
   BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
   )
 
-install (TARGETS jt9 wsprd fmtave fcal fmeasure
+install (TARGETS jt9 wsprd fmtave fcal fmeasure 
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
   BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
   )

@@ -9,6 +9,7 @@
 #include "models/IARURegions.hpp"
 #include "Audio/AudioDevice.hpp"
 #include "Transceiver/Transceiver.hpp"
+#include "otpgenerator.h"
 
 #include "pimpl_h.hpp"
 
@@ -187,10 +188,16 @@ public:
   void setSpecial_Hound();
   void setSpecial_Fox();
   void setSpecial_None();
+  void toggle_SF();
   bool highlight_DXcall () const;
   bool highlight_DXgrid () const;
   bool Individual_Contest_Name() const;
-
+  bool validate_otp_seed(QString);
+  QString OTPSeed() const;
+  QString OTPUrl() const;
+  bool OTPEnabled() const;
+  bool ShowOTP() const;
+  unsigned int OTPinterval() const;
 //                                      0       1      2         3       4       5      6     7        8           9
   enum class SpecialOperatingActivity {NONE, NA_VHF, EU_VHF, FIELD_DAY, RTTY, WW_DIGI, FOX, HOUND, ARRL_DIGI, Q65_PILEUP};
   SpecialOperatingActivity special_op_id () const;

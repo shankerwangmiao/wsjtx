@@ -138,6 +138,7 @@ public:
   bool decode_at_52s () const;
   bool single_decode () const;
   bool twoPass() const;
+  bool superFox() const;
   bool bFox() const;
   bool bHound() const;
   bool bLowSidelobes() const;
@@ -232,7 +233,8 @@ public:
   // This method queries if a CAT and PTT connection is operational.
   bool is_transceiver_online () const;
 
-  // Start the rig connection, safe and normal to call when rig is already open.
+  // Start the rig connection, safe and normal to call when rig is
+  // already open.
   bool transceiver_online ();
 
   // check if a real rig is configured

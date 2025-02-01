@@ -52,8 +52,8 @@ of a button, and various other improvements.
 Numerous other enhancements and bug fixes make operation smoother and
 more intuitive. Features for main-window switching between modes have
 been enhanced so that submode and status of the Sh and Fast checkboxes
-are saved and restored by mode. Note that QMAP and "Update Hamlib" are
-currently available only in Windows.
+are saved and restored by mode. Note that the "Update Hamlib" feature
+is currently available only in Windows.
 
 
                       Release: WSJT-X 2.7.0-rc8

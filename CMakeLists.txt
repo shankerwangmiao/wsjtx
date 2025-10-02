@@ -50,7 +50,7 @@ project (wsjtx
   )
 set (PROJECT_DESCRIPTION "WSJT-X: Digital Modes for Weak Signal Communications in Amateur Radio")
 set (CMAKE_PROJECT_DESCRIPTION ${PROJECT_DESCRIPTION})
-set (CMAKE_AUTOUIC ON) 
+set (CMAKE_AUTOUIC ON)
 
 #
 # Local CMake modules and support files
@@ -295,7 +295,7 @@ set (wsjtx_CXXSRCS
   Network/wsprnet.cpp
   WSPR/WSPRBandHopping.cpp
   widgets/ExportCabrillo.cpp
-  widgets/QSYMessage.cpp 
+  widgets/QSYMessage.cpp
   widgets/QSYMessageCreator.cpp
   widgets/qsymonitor.cpp
   )
@@ -675,7 +675,7 @@ set (wsjt_CSRCS
   lib/superfox/qpc/qpc_fwht.c
   lib/superfox/qpc/qpc_n127k50q128.c
   lib/superfox/qpc/qpc_subs.c
-  
+
   )
 
 set (wsjt_qt_UISRCS
@@ -842,6 +842,8 @@ set_source_files_properties (lib/filbig.f90 PROPERTIES COMPILE_FLAGS "-Wno-alias
 
 set_property (SOURCE ${all_C_and_CXXSRCS} APPEND_STRING PROPERTY COMPILE_FLAGS " -include wsjtx_config.h")
 set_property (SOURCE ${all_C_and_CXXSRCS} APPEND PROPERTY OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/wsjtx_config.h)
+
+set_property (SOURCE widgets/plotter.cpp widgets/mainwindow.cpp APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-vla-cxx-extension")
 
 if (WIN32)
   # generate the OmniRig COM interface source
@@ -1035,12 +1037,12 @@ if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 #set (CMAKE_Fortran_FLAGS_DEBUG   "${CMAKE_Fortran_FLAGS_DEBUG} -g -fbacktrace -fbounds-check -fno-f2c -ffpe-summary=invalid,zero,overflow,underflow ${General_FFLAGS}")
   set (CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_RELEASE} -fbounds-check -funroll-all-loops -fno-f2c -ffpe-summary=invalid,zero,overflow,underflow ${General_FFLAGS}")
 
-  
+
   # FPE traps currently disabled in Debug configuration builds until
   # we decide if they are meaningful, without these FP instructions
   # run in nonstop mode and do not trap
   #set (CMAKE_Fortran_FLAGS_DEBUG   "${CMAKE_Fortran_FLAGS_DEBUG} ${CMAKE_Fortran_FLAGS_DEBUG}  -ffpe-trap=invalid,zero,overflow")
-  
+
 elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
   # ifort (untested)
   set (CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -f77rtl ${General_FFLAGS}")
@@ -1187,7 +1189,7 @@ if (${OPENMP_FOUND} OR APPLE)
   endif (APPLE)
 endif (${OPENMP_FOUND} OR APPLE)
 
-if(WSJT_BUILD_UTILS) 
+if(WSJT_BUILD_UTILS)
 
 add_executable (jt4sim lib/jt4sim.f90)
 target_link_libraries (jt4sim wsjt_fort wsjt_cxx)
@@ -1236,7 +1238,7 @@ target_link_libraries (jt9code wsjt_fort wsjt_cxx)
 
 add_executable (wsprcode lib/wsprcode/wsprcode.f90 lib/wsprcode/nhash.c)
 target_link_libraries (wsprcode wsjt_fort wsjt_cxx)
-	       
+
 add_executable (encode77 lib/77bit/encode77.f90)
 target_link_libraries (encode77 wsjt_fort wsjt_cxx)
 
@@ -1660,18 +1662,18 @@ install (TARGETS udp_daemon message_aggregator wsjtx_app_version
   BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
   )
 
-install (TARGETS jt9 wsprd fmtave fcal fmeasure 
+install (TARGETS jt9 wsprd fmtave fcal fmeasure
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
   BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
   )
 
 if(WSJT_BUILD_UTILS)
-install (TARGETS ft8code jt65code jt9code jt4code msk144code 
+install (TARGETS ft8code jt65code jt9code jt4code msk144code
   q65code fst4sim q65sim echosim hash22calc cablog
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
   BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
   )
-endif(WSJT_BUILD_UTILS)  
+endif(WSJT_BUILD_UTILS)
 
 install (PROGRAMS
   ${RIGCTL_EXE}
